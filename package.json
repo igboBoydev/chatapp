@@ -1,0 +1,28 @@
+{
+  "name": "chatapp",
+  "version": "1.0.0",
+  "description": "A chat application for users",
+  "keywords": [
+    "chat"
+  ],
+  "license": "MIT",
+  "author": "Abel Kalu",
+  "type": "commonjs",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.2",
+    "@types/socket.io": "^3.0.1",
+    "@types/socket.io-client": "^1.4.36",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

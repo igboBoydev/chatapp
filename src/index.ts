@@ -1,4 +1,8 @@
 import express from "express";
+import dotenv from "dotenv";
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 import { createServer } from "http";
 import mongoose from "mongoose";
 import { Server, Socket } from "socket.io";
@@ -24,11 +28,8 @@ interface UserMap {
 }
 
 const users: UserMap = {}; // { userId: socketId }
-let MONGO_ENV = "redis://localhost:6379";
-if (process.env.NODE_ENV === "production") {
-  // @ts-ignore mesage
-  MONGO_ENV = process.env.MONGO_ENV;
-}
+let MONGO_ENV: string =
+  process.env.MONGO_ENV || "mongodb://localhost:27017/chatDB";
 mongoose
   .connect(MONGO_ENV) // Replace with your actual DB URL
   .then(() => console.log("✅ Connected to MongoDB"))
@@ -292,4 +293,9 @@ io.on("connection", (socket: Socket) => {
 const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log({
+    MONGO_ENV: process.env.MONGO_ENV,
+    REDIS_URL_ENV: process.env.REDIS_URL_ENV,
+    NODE_ENV: process.env.NODE_ENV,
+  });
 });

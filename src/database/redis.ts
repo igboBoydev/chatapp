@@ -1,10 +1,21 @@
-import { createClient } from "redis";
+import { createClient, RedisClientType } from "redis";
 
-const REDIS_URL = process.env.REDIS_URL_ENV;
+let REDIS_URL = process.env.RED_URL_ENV;
 
-const redisSubscriber = createClient({ url: REDIS_URL });
-const redisPublisher = createClient({ url: REDIS_URL });
-const redisClient = createClient({ url: REDIS_URL });
+let redisSubscriber: RedisClientType;
+let redisPublisher: RedisClientType;
+let redisClient: RedisClientType;
+if (process.env.NODE_ENV === "production") {
+  // @ts-ignore mesage
+  // REDIS_URL = process.env.REDIS_URL_ENV;
+  redisSubscriber = createClient({ url: REDIS_URL });
+  redisPublisher = createClient({ url: REDIS_URL });
+  redisClient = createClient({ url: REDIS_URL });
+} else {
+  redisSubscriber = createClient();
+  redisPublisher = createClient();
+  redisClient = createClient();
+}
 
 // Async function to connect Redis clients
 async function connectRedis() {

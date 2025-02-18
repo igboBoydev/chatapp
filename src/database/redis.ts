@@ -1,8 +1,10 @@
 import { createClient } from "redis";
 
-const redisSubscriber = createClient();
-const redisPublisher = createClient();
-const redisClient = createClient();
+const REDIS_URL = "redis://red-crg7dnbqf0us73diqur0:6379";
+
+const redisSubscriber = createClient({ url: REDIS_URL });
+const redisPublisher = createClient({ url: REDIS_URL });
+const redisClient = createClient({ url: REDIS_URL });
 
 // Async function to connect Redis clients
 async function connectRedis() {

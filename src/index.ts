@@ -24,11 +24,13 @@ interface UserMap {
 }
 
 const users: UserMap = {}; // { userId: socketId }
-
+let MONGO_ENV = "redis://localhost:6379";
+if (process.env.NODE_ENV === "production") {
+  // @ts-ignore mesage
+  MONGO_ENV = process.env.MONGO_ENV;
+}
 mongoose
-  .connect(
-    "mongodb+srv://kunlethompson2:MWxmLIykHbnOzAAS@paydb.3mvwp.mongodb.net/test"
-  ) // Replace with your actual DB URL
+  .connect(MONGO_ENV) // Replace with your actual DB URL
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 

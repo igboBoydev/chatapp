@@ -72,8 +72,15 @@ io.on("connection", (socket: Socket) => {
         `Message from ${data.senderId} to ${data.receiverId}: ${data.message}`
       );
 
+      console.log("-------------------------------- starting");
       // Publish message to Redis channel
-      await redisPublisher.publish("messages", JSON.stringify(data));
+      let resMessage = await redisPublisher.publish(
+        "messages",
+        JSON.stringify(data)
+      );
+
+      console.log("-------------------------------- started...");
+      console.log({ resMessage });
 
       const newMessage = new Message({
         senderId: data.senderId,
@@ -81,7 +88,9 @@ io.on("connection", (socket: Socket) => {
         message: data.message,
         read: false,
       });
-      await newMessage.save();
+      let res1 = await newMessage.save();
+      console.log({ res1 });
+      console.log("-------------------------------- end");
 
       const receiverSocketId = users[data.receiverId];
       if (receiverSocketId) {

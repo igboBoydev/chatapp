@@ -21,11 +21,11 @@ const http_1 = require("http");
 const mongoose_1 = __importDefault(require("mongoose"));
 const socket_io_1 = require("socket.io");
 const mongoose_2 = __importDefault(require("./database/mongoose"));
-const redis_1 = require("redis");
-const redis_2 = require("./database/redis");
-const redisClient = (0, redis_1.createClient)();
-redisClient.connect();
-redisClient.on("error", (err) => console.error("Redis Error:", err));
+// import { createClient } from "redis";
+// import { redisPublisher } from "./database/redis";
+// const redisClient = createClient();
+// redisClient.connect();
+// redisClient.on("error", (err) => console.error("Redis Error:", err));
 const app = (0, express_1.default)();
 const server = (0, http_1.createServer)(app);
 const io = new socket_io_1.Server(server, {
@@ -45,9 +45,9 @@ io.on("connection", (socket) => {
     socket.on("register", (userId) => __awaiter(void 0, void 0, void 0, function* () {
         users[userId] = socket.id;
         console.log(`User registered: ${userId} -> ${socket.id}`);
-        yield redisClient.set(`session:${userId}`, socket.id, {
-            EX: 60 * 60 * 24 * 7,
-        });
+        // await redisClient.set(`session:${userId}`, socket.id, {
+        //   EX: 60 * 60 * 24 * 7,
+        // });
         socket.emit("sessionRegistered", { userId, sessionId: socket.id });
         const messages = yield mongoose_2.default.find({
             $or: [{ senderId: userId }, { receiverId: userId }],
@@ -68,9 +68,12 @@ io.on("connection", (socket) => {
         console.log(`Message from ${data.senderId} to ${data.receiverId}: ${data.message}`);
         console.log("-------------------------------- starting");
         // Publish message to Redis channel
-        let resMessage = yield redis_2.redisPublisher.publish("messages", JSON.stringify(data));
-        console.log("-------------------------------- started...");
-        console.log({ resMessage });
+        // let resMessage = await redisPublisher.publish(
+        //   "messages",
+        //   JSON.stringify(data)
+        // );
+        // console.log("-------------------------------- started...");
+        // console.log({ resMessage });
         const newMessage = new mongoose_2.default({
             senderId: data.senderId,
             receiverId: data.receiverId,
@@ -110,7 +113,10 @@ io.on("connection", (socket) => {
             }
             console.log("Message updated:", updatedMessage);
             // Publish update to Redis
-            yield redis_2.redisPublisher.publish("messageUpdate", JSON.stringify(updatedMessage));
+            // await redisPublisher.publish(
+            //   "messageUpdate",
+            //   JSON.stringify(updatedMessage)
+            // );
             // Notify both sender and receiver
             io.to(users[updatedMessage.senderId]).emit("messageEdited", {
                 messageId,
@@ -142,20 +148,19 @@ io.on("connection", (socket) => {
     }));
     // Reconnect users with active sessions
     socket.on("reconnectUser", (userId) => __awaiter(void 0, void 0, void 0, function* () {
-        const storedSocketId = yield redisClient.get(`session:${userId}`);
-        if (storedSocketId) {
-            users[userId] = socket.id;
-            console.log(`User ${userId} reconnected -> ${socket.id}`);
-        }
-        else {
-            console.log(`No active session found for ${userId}`);
-        }
+        // const storedSocketId = await redisClient.get(`session:${userId}`);
+        // if (storedSocketId) {
+        //   users[userId] = socket.id;
+        //   console.log(`User ${userId} reconnected -> ${socket.id}`);
+        // } else {
+        //   console.log(`No active session found for ${userId}`);
+        // }
     }));
     // Logout user (clear session)
     socket.on("logout", (userId) => __awaiter(void 0, void 0, void 0, function* () {
-        yield redisClient.del(`session:${userId}`);
-        delete users[userId];
-        console.log(`User ${userId} logged out`);
+        // await redisClient.del(`session:${userId}`);
+        // delete users[userId];
+        // console.log(`User ${userId} logged out`);
     }));
     socket.on("deleteMessage", (data) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -177,7 +182,10 @@ io.on("connection", (socket) => {
                 return;
             }
             // Publish deletion to Redis
-            yield redis_2.redisPublisher.publish("messageDeleted", JSON.stringify({ messageId }));
+            // await redisPublisher.publish(
+            //   "messageDeleted",
+            //   JSON.stringify({ messageId })
+            // );
             // Notify both sender and receiver
             io.to(users[deletedMessage.senderId]).emit("messageDeleted", messageId);
             io.to(users[deletedMessage.receiverId]).emit("messageDeleted", messageId);

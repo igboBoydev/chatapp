@@ -7,13 +7,13 @@ import { createServer } from "http";
 import mongoose from "mongoose";
 import { Server, Socket } from "socket.io";
 import Message from "./database/mongoose";
-import { createClient } from "redis";
-import { redisPublisher } from "./database/redis";
+// import { createClient } from "redis";
+// import { redisPublisher } from "./database/redis";
 
-const redisClient = createClient();
-redisClient.connect();
+// const redisClient = createClient();
+// redisClient.connect();
 
-redisClient.on("error", (err) => console.error("Redis Error:", err));
+// redisClient.on("error", (err) => console.error("Redis Error:", err));
 
 const app = express();
 const server = createServer(app);
@@ -43,9 +43,9 @@ io.on("connection", (socket: Socket) => {
     users[userId] = socket.id;
     console.log(`User registered: ${userId} -> ${socket.id}`);
 
-    await redisClient.set(`session:${userId}`, socket.id, {
-      EX: 60 * 60 * 24 * 7,
-    });
+    // await redisClient.set(`session:${userId}`, socket.id, {
+    //   EX: 60 * 60 * 24 * 7,
+    // });
 
     socket.emit("sessionRegistered", { userId, sessionId: socket.id });
 
@@ -75,13 +75,13 @@ io.on("connection", (socket: Socket) => {
 
       console.log("-------------------------------- starting");
       // Publish message to Redis channel
-      let resMessage = await redisPublisher.publish(
-        "messages",
-        JSON.stringify(data)
-      );
+      // let resMessage = await redisPublisher.publish(
+      //   "messages",
+      //   JSON.stringify(data)
+      // );
 
-      console.log("-------------------------------- started...");
-      console.log({ resMessage });
+      // console.log("-------------------------------- started...");
+      // console.log({ resMessage });
 
       const newMessage = new Message({
         senderId: data.senderId,
@@ -136,10 +136,10 @@ io.on("connection", (socket: Socket) => {
         console.log("Message updated:", updatedMessage);
 
         // Publish update to Redis
-        await redisPublisher.publish(
-          "messageUpdate",
-          JSON.stringify(updatedMessage)
-        );
+        // await redisPublisher.publish(
+        //   "messageUpdate",
+        //   JSON.stringify(updatedMessage)
+        // );
 
         // Notify both sender and receiver
         io.to(users[updatedMessage.senderId]).emit("messageEdited", {
@@ -175,20 +175,20 @@ io.on("connection", (socket: Socket) => {
 
   // Reconnect users with active sessions
   socket.on("reconnectUser", async (userId) => {
-    const storedSocketId = await redisClient.get(`session:${userId}`);
-    if (storedSocketId) {
-      users[userId] = socket.id;
-      console.log(`User ${userId} reconnected -> ${socket.id}`);
-    } else {
-      console.log(`No active session found for ${userId}`);
-    }
+    // const storedSocketId = await redisClient.get(`session:${userId}`);
+    // if (storedSocketId) {
+    //   users[userId] = socket.id;
+    //   console.log(`User ${userId} reconnected -> ${socket.id}`);
+    // } else {
+    //   console.log(`No active session found for ${userId}`);
+    // }
   });
 
   // Logout user (clear session)
   socket.on("logout", async (userId) => {
-    await redisClient.del(`session:${userId}`);
-    delete users[userId];
-    console.log(`User ${userId} logged out`);
+    // await redisClient.del(`session:${userId}`);
+    // delete users[userId];
+    // console.log(`User ${userId} logged out`);
   });
 
   socket.on("deleteMessage", async (data: { messageId: string }) => {
@@ -216,10 +216,10 @@ io.on("connection", (socket: Socket) => {
       }
 
       // Publish deletion to Redis
-      await redisPublisher.publish(
-        "messageDeleted",
-        JSON.stringify({ messageId })
-      );
+      // await redisPublisher.publish(
+      //   "messageDeleted",
+      //   JSON.stringify({ messageId })
+      // );
 
       // Notify both sender and receiver
       io.to(users[deletedMessage.senderId]).emit("messageDeleted", messageId);
